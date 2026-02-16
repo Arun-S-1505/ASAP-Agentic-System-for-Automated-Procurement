@@ -32,7 +32,7 @@ object AppModule {
      * For Render cloud deployment, replace with:
      *   "https://<your-render-app>.onrender.com/api/v1"
      */
-    private const val BASE_URL = "http://192.168.1.12:8000/api/v1"
+    private const val BASE_URL = "https://asap-agentic-system-for-automated.onrender.com/api/v1"
 
     val httpClient: HttpClient by lazy {
         HttpClientFactory.createHttpClient()
