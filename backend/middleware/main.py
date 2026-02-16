@@ -54,13 +54,13 @@ async def lifespan(app: FastAPI):
     # ---- STARTUP ----
     logger.info("Starting %s (env=%s)", settings.app_name, settings.app_env)
 
-    # Create tables in dev mode (use Alembic migrations in production)
-    if not settings.is_production:
-        try:
-            logger.info("Creating database tables (non-production mode)")
-            Base.metadata.create_all(bind=engine)
-        except Exception as exc:
-            logger.warning("Database not available — skipping table creation: %s", exc)
+    # Create tables if they don't exist (idempotent operation)
+    try:
+        logger.info("Ensuring database tables exist (creating if needed)")
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables ready")
+    except Exception as exc:
+        logger.warning("Database table creation failed: %s", exc)
 
     # Demo mode: Clear all POs for fresh demo
     if settings.demo_mode:
