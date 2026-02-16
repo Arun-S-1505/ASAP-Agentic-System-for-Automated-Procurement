@@ -20,7 +20,7 @@ settings = get_settings()
 # Engine — single connection pool shared across the application
 # ---------------------------------------------------------------------------
 engine = create_engine(
-    settings.database_url,
+    settings.get_database_url(),
     echo=settings.debug,        # SQL logging in dev mode
     pool_pre_ping=True,         # verify connections before use
     pool_size=10,

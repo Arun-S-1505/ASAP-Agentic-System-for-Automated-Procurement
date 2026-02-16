@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     debug: bool = True
 
     # --- Database (PostgreSQL) ---
+    database_url: str | None = None  # If set, overrides individual DB fields
     db_host: str = "localhost"
     db_port: int = 5432
     db_user: str = "postgres"
@@ -63,9 +64,23 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expiry_minutes: int = 480  # 8 hours
 
-    @property
-    def database_url(self) -> str:
-        """Build SQLAlchemy-compatible PostgreSQL connection string."""
+    def get_database_url(self) -> str:
+        """
+        Get SQLAlchemy-compatible PostgreSQL connection string.
+        Uses DATABASE_URL env var if set (for Render/production),
+        otherwise builds from individual DB_* components (for local dev).
+        """
+        if self.database_url:
+            # Render provides postgres://, but SQLAlchemy needs postgresql://
+            url = self.database_url
+            if url.startswith("postgres://"):
+                url = url.replace("postgres://", "postgresql+psycopg2://", 1)
+            elif not url.startswith("postgresql+psycopg2://"):
+                # Add driver if missing
+                url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
+            return url
+        
+        # Local dev: build from components
         return (
             f"postgresql+psycopg2://{self.db_user}:{self.db_password}"
             f"@{self.db_host}:{self.db_port}/{self.db_name}"
