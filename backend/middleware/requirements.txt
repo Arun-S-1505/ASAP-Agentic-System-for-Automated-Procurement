@@ -1,0 +1,37 @@
+# Intelligent ERP Approval Middleware
+# Python 3.11+
+
+# --- Web Framework ---
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+gunicorn==21.2.0         # Production WSGI/ASGI server (Render)
+
+# --- Data Validation ---
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# --- Database ---
+sqlalchemy==2.0.25
+pymysql==1.1.0          # MySQL driver for SQLAlchemy
+cryptography==41.0.7    # Required by pymysql for secure connections
+alembic==1.13.1         # Database migrations
+
+# --- Authentication ---
+python-jose[cryptography]==3.3.0   # JWT encoding/decoding
+passlib[bcrypt]==1.7.4             # Password hashing (bcrypt)
+
+# --- Background Scheduling ---
+apscheduler==3.10.4
+
+# --- HTTP Client (ERP communication) ---
+requests==2.31.0
+
+# --- Configuration ---
+python-dotenv==1.0.0
+
+# --- Logging ---
+structlog==24.1.0
+
+# --- Dev / Testing ---
+pytest==7.4.4
+httpx==0.26.0           # Async test client for FastAPI

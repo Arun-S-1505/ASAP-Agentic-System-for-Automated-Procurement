@@ -1,0 +1,58 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+.eggs/
+*.pyc
+venv/
+.venv/
+env/
+
+# Environment files (contain secrets)
+.env
+*.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+
+# ===========================
+# Android / Gradle
+# ===========================
+mobile/build/
+mobile/composeApp/build/
+mobile/.gradle/
+mobile/local.properties
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# ===========================
+# Project specific
+# ===========================
+structure.txt
+*.db
+*.sqlite3

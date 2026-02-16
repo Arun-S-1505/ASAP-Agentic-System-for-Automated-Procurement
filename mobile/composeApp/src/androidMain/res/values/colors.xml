@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="asap_navy">#FF0F1B2D</color>
+    <color name="asap_indigo">#FF1B2A4A</color>
+    <color name="asap_teal">#FF00C9A7</color>
+    <color name="asap_white">#FFFFFFFF</color>
+    <color name="splash_background">#FF0F1B2D</color>
+</resources>
