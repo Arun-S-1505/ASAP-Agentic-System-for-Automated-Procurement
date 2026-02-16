@@ -23,7 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import get_settings
 from db import Base, engine
-from scheduler import start_scheduler, shutdown_scheduler
+from scheduler import start_scheduler, shutdown_scheduler, init_adapter
 from api import router as api_router
 from api.auth_routes import router as auth_router
 from api.analytics_routes import router as analytics_router
@@ -62,8 +62,33 @@ async def lifespan(app: FastAPI):
         except Exception as exc:
             logger.warning("Database not available — skipping table creation: %s", exc)
 
-    # Start background commit worker
-    start_scheduler()
+    # Demo mode: Clear all POs for fresh demo
+    if settings.demo_mode:
+        logger.warning("DEMO_MODE enabled — resetting all requisitions and decisions")
+        from db.session import SessionLocal
+        from db.models import Requisition, ApprovalDecision, ERPSimulatedRequisition
+        db = SessionLocal()
+        try:
+            db.query(ApprovalDecision).delete()
+            db.query(Requisition).delete()
+            db.query(ERPSimulatedRequisition).delete()
+            db.commit()
+            logger.info("Demo reset complete — all POs cleared")
+        except Exception as exc:
+            logger.error("Demo reset failed: %s", exc)
+            db.rollback()
+        finally:
+            db.close()
+
+    # Always initialize ERP adapter (needed for /detect endpoint)
+    init_adapter()
+
+    # Start background commit worker (only if auto-commit enabled)
+    if settings.auto_commit_enabled:
+        start_scheduler()
+        logger.info("Auto-commit scheduler started")
+    else:
+        logger.warning("AUTO_COMMIT_ENABLED=false — scheduler NOT started, POs will stay pending")
     logger.info("Application startup complete")
 
     yield  # ---- APPLICATION RUNNING ----

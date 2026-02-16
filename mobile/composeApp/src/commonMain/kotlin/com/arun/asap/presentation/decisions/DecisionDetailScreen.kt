@@ -222,7 +222,7 @@ private fun DetailContent(
             }
 
             // ── Approve / Reject Actions ──
-            if (decision.state == "pending_commit") {
+            if (decision.state == "pending_commit" || decision.state == "detected") {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)

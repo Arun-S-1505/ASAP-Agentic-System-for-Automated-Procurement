@@ -272,6 +272,11 @@ def _commit_job() -> None:
     """
     global _commit_worker, _adapter
 
+    settings = get_settings()
+    if not settings.auto_commit_enabled:
+        logger.debug("Auto-commit disabled — skipping commit job")
+        return
+
     if not _commit_worker or not _adapter:
         logger.warning("CommitWorker or adapter not initialized — skipping")
         return
@@ -298,20 +303,15 @@ def _commit_job() -> None:
         logger.error("Commit job failed with exception: %s", exc)
 
 
-def start_scheduler() -> None:
+def init_adapter() -> None:
     """
-    Start the background scheduler.
-    Called once during FastAPI application startup.
+    Initialize the ERP adapter (without starting the scheduler).
+    Called on startup so /detect always has an adapter available.
     """
-    global _scheduler, _commit_worker, _adapter
+    global _adapter
 
     settings = get_settings()
-    interval = settings.scheduler_commit_interval_seconds
 
-    # Initialize commit worker
-    _commit_worker = CommitWorker()
-
-    # Initialize ERP adapter based on configuration
     if settings.erp_mode == "mock":
         logger.info("Using MockERPAdapter (erp_mode=mock, MySQL-backed)")
         _adapter = MockERPAdapter()
@@ -329,12 +329,29 @@ def start_scheduler() -> None:
         )
         _adapter = MockERPAdapter()
 
-    # Eagerly connect so that seed data (mock) or auth (SAP) is ready
     try:
         _adapter.connect()
         logger.info("ERP adapter connected on startup")
     except Exception as exc:
         logger.warning("ERP adapter initial connect failed: %s", exc)
+
+
+def start_scheduler() -> None:
+    """
+    Start the background scheduler.
+    Called once during FastAPI application startup.
+    """
+    global _scheduler, _commit_worker
+
+    settings = get_settings()
+    interval = settings.scheduler_commit_interval_seconds
+
+    # Initialize commit worker
+    _commit_worker = CommitWorker()
+
+    # Ensure adapter is initialized
+    if _adapter is None:
+        init_adapter()
 
     # Create and start scheduler
     _scheduler = BackgroundScheduler()

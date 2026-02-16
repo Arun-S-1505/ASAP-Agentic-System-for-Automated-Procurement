@@ -140,19 +140,26 @@ class ApprovalOrchestrator:
                 # Determine decision based on risk thresholds
                 decision = self._determine_decision(risk_score)
 
-                # Generate commit timestamp (grace period)
+                # Set state based on auto-commit configuration
+                # Always compute commit_at (required field), but only use pending_commit state when auto-commit is enabled
                 commit_at = datetime.utcnow() + timedelta(
                     minutes=self.settings.grace_period_minutes
                 )
+                if self.settings.auto_commit_enabled:
+                    # Auto-commit: schedule for ERP commit after grace period
+                    state = "pending_commit"
+                else:
+                    # Manual mode: leave as detected for user action
+                    state = "detected"
 
                 # Create approval decision record
                 approval_decision = ApprovalDecision(
-                    id=uuid.uuid4(),
+                    id=str(uuid.uuid4()),
                     erp_requisition_id=requisition.erp_requisition_id,
                     risk_score=risk_score,
                     risk_explanation=risk_explanation,
                     decision=decision,
-                    state="pending_commit",
+                    state=state,
                     commit_at=commit_at,
                     comment=self._generate_comment(risk_score, decision),
                 )
@@ -211,11 +218,11 @@ class ApprovalOrchestrator:
         """
         logger.info("Attempting to undo decision for %s", erp_requisition_id)
 
-        # Find pending_commit decision
+        # Find pending_commit or detected decision
         stmt = (
             select(ApprovalDecision)
             .where(ApprovalDecision.erp_requisition_id == erp_requisition_id)
-            .where(ApprovalDecision.state == "pending_commit")
+            .where(ApprovalDecision.state.in_(["pending_commit", "detected"]))
             .order_by(ApprovalDecision.created_at.desc())
             .limit(1)
         )
@@ -406,18 +413,18 @@ class ApprovalOrchestrator:
         erp_requisition_id: str,
         db: Session,
     ) -> ApprovalDecision | None:
-        """Find the latest pending_commit decision for a requisition."""
+        """Find the latest pending decision (pending_commit or detected) for a requisition."""
         stmt = (
             select(ApprovalDecision)
             .where(ApprovalDecision.erp_requisition_id == erp_requisition_id)
-            .where(ApprovalDecision.state == "pending_commit")
+            .where(ApprovalDecision.state.in_(["pending_commit", "detected"]))
             .order_by(ApprovalDecision.created_at.desc())
             .limit(1)
         )
         decision = db.execute(stmt).scalar_one_or_none()
         if not decision:
             logger.warning(
-                "No pending_commit decision found for %s",
+                "No pending decision found for %s",
                 erp_requisition_id,
             )
         return decision

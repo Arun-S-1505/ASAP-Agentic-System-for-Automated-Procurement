@@ -12,8 +12,7 @@ pydantic-settings==2.1.0
 
 # --- Database ---
 sqlalchemy==2.0.25
-pymysql==1.1.0          # MySQL driver for SQLAlchemy
-cryptography==41.0.7    # Required by pymysql for secure connections
+psycopg2-binary==2.9.9  # PostgreSQL driver for SQLAlchemy
 alembic==1.13.1         # Database migrations
 
 # --- Authentication ---

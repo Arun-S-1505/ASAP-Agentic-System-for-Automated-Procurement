@@ -11,7 +11,6 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import String, Float, DateTime, Text, Index
-from sqlalchemy.dialects.mysql import CHAR
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.sql import func
 
@@ -83,11 +82,11 @@ class ApprovalDecision(Base):
 
     __tablename__ = "approval_decisions"
 
-    # Primary key: UUID for distributed system compatibility
-    id: Mapped[uuid.UUID] = mapped_column(
-        CHAR(36),
+    # Primary key: UUID for distributed system compatibility  
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        default=uuid.uuid4,
+        default=lambda: str(uuid.uuid4()),
         nullable=False,
     )
 

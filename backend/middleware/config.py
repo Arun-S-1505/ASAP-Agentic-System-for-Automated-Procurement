@@ -24,10 +24,10 @@ class Settings(BaseSettings):
     app_env: str = "development"  # development | staging | production
     debug: bool = True
 
-    # --- Database (MySQL) ---
+    # --- Database (PostgreSQL) ---
     db_host: str = "localhost"
-    db_port: int = 3306
-    db_user: str = "root"
+    db_port: int = 5432
+    db_user: str = "postgres"
     db_password: str = "changeme"
     db_name: str = "erp_middleware"
 
@@ -48,6 +48,12 @@ class Settings(BaseSettings):
     # --- Approval Grace Period ---
     grace_period_minutes: int = 5  # Time window before auto-committing to ERP
 
+    # --- Demo Mode ---
+    demo_mode: bool = False  # Reset POs on startup for demos
+
+    # --- Auto-Commit ---
+    auto_commit_enabled: bool = True  # Set False to disable automatic ERP commit
+
     # --- API ---
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -59,9 +65,9 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
-        """Build SQLAlchemy-compatible MySQL connection string."""
+        """Build SQLAlchemy-compatible PostgreSQL connection string."""
         return (
-            f"mysql+pymysql://{self.db_user}:{self.db_password}"
+            f"postgresql+psycopg2://{self.db_user}:{self.db_password}"
             f"@{self.db_host}:{self.db_port}/{self.db_name}"
         )
 

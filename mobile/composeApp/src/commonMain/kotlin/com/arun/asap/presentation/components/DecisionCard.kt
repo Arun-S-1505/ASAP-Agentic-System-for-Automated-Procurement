@@ -40,8 +40,8 @@ fun DecisionCard(
     modifier: Modifier = Modifier
 ) {
     ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
         onClick = { onClick(decision.erpRequisitionId) },
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -97,7 +97,7 @@ fun DecisionCard(
             }
 
             // Undo button if pending
-            if (decision.state == "pending_commit") {
+            if (decision.state == "pending_commit" || decision.state == "detected") {
                 FilledTonalButton(
                     onClick = { onUndo(decision.erpRequisitionId) },
                     modifier = Modifier.fillMaxWidth(),

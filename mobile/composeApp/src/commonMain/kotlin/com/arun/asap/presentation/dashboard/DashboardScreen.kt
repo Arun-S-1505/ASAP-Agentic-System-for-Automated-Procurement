@@ -103,7 +103,7 @@ fun DashboardScreen(
                 d.erpRequisitionId.contains(searchQuery, ignoreCase = true) ||
                 d.decision.contains(searchQuery, ignoreCase = true)
             val matchFilter = when (selectedFilter) {
-                "Pending" -> d.state == "pending_commit"
+                "Pending" -> d.state == "pending_commit" || d.state == "detected"
                 "Committed" -> d.state == "committed"
                 "Auto Approve" -> d.decision == "auto_approve"
                 "Hold" -> d.decision == "hold"
@@ -291,13 +291,7 @@ fun DashboardScreen(
                                         .then(borderMod)
                                         .clip(RoundedCornerShape(16.dp))
                                         .combinedClickable(
-                                            onClick = {
-                                                if (inSelectionMode) {
-                                                    viewModel.toggleSelect(decision.erpRequisitionId)
-                                                } else {
-                                                    onDecisionClick(decision.erpRequisitionId)
-                                                }
-                                            },
+                                            onClick = { },
                                             onLongClick = {
                                                 viewModel.toggleSelect(decision.erpRequisitionId)
                                             }
@@ -306,7 +300,13 @@ fun DashboardScreen(
                                     DecisionCard(
                                         decision = decision,
                                         onUndo = { viewModel.undo(it) },
-                                        onClick = { /* handled by combinedClickable above */ },
+                                        onClick = { erpId ->
+                                            if (inSelectionMode) {
+                                                viewModel.toggleSelect(erpId)
+                                            } else {
+                                                onDecisionClick(erpId)
+                                            }
+                                        },
                                         modifier = Modifier
                                     )
                                     // Selection check overlay

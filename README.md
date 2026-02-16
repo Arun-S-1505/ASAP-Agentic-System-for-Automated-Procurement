@@ -189,8 +189,9 @@ The backend is configured for deployment on [Render](https://render.com):
 5. Add environment variables (Settings → Environment):
    - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` — your MySQL host
    - `JWT_SECRET_KEY` — a strong random string
+   - `SAP_API_KEY` — your SAP API key (required for `sap` or `hybrid` mode)
    - `APP_ENV` — `production`
-   - `ERP_MODE` — `mock`
+   - `ERP_MODE` — `mock` (or `sap` / `hybrid` for production)
 6. Deploy!
 
 For MySQL, use a free managed MySQL provider like [Aiven](https://aiven.io), [TiDB Serverless](https://tidbcloud.com), or [PlanetScale](https://planetscale.com).
@@ -207,6 +208,7 @@ For MySQL, use a free managed MySQL provider like [Aiven](https://aiven.io), [Ti
 | `DB_PASSWORD` | `changeme` | MySQL password |
 | `DB_NAME` | `erp_middleware` | MySQL database name |
 | `ERP_MODE` | `mock` | `mock` / `sap` / `hybrid` |
+| `SAP_API_KEY` | (none) | SAP API key (required for `sap` or `hybrid` mode) |
 | `JWT_SECRET_KEY` | (default) | Secret for signing JWT tokens |
 | `JWT_EXPIRY_MINUTES` | `480` | Token expiry (8 hours) |
 | `GRACE_PERIOD_MINUTES` | `5` | Time before auto-commit to ERP |
