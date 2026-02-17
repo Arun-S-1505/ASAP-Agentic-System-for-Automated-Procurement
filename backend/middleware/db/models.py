@@ -144,8 +144,8 @@ class ApprovalDecision(Base):
     processing_status: Mapped[str | None] = mapped_column(String(10))
     is_deleted: Mapped[bool | None] = mapped_column(default=False)
     is_closed: Mapped[bool | None] = mapped_column(default=False)
-    creation_date: Mapped[str | None] = mapped_column(String(20))
-    delivery_date: Mapped[str | None] = mapped_column(String(20))
+    creation_date: Mapped[str | None] = mapped_column(String(30))
+    delivery_date: Mapped[str | None] = mapped_column(String(30))
 
     # Commit tracking
     committed_at: Mapped[datetime | None] = mapped_column(DateTime)

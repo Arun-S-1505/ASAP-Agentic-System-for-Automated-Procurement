@@ -20,8 +20,9 @@ OData Endpoints:
 """
 
 import logging
+import re
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 import requests
@@ -738,8 +739,8 @@ class SAPERPAdapter(ERPAdapter):
             is_closed = False
 
         # Parse dates (SAP format: /Date(epoch)/ or YYYY-MM-DD)
-        creation_date = odata_item.get("CreationDate", "")
-        delivery_date = odata_item.get("DeliveryDate", "")
+        creation_date = SAPERPAdapter._parse_sap_date(odata_item.get("CreationDate", ""))
+        delivery_date = SAPERPAdapter._parse_sap_date(odata_item.get("DeliveryDate", ""))
 
         return RequisitionDTO(
             erp_requisition_id=str(
@@ -767,6 +768,28 @@ class SAPERPAdapter(ERPAdapter):
             creation_date=str(creation_date) if creation_date else None,
             delivery_date=str(delivery_date) if delivery_date else None,
         )
+
+    @staticmethod
+    def _parse_sap_date(value: Any) -> str | None:
+        """
+        Convert SAP OData date to ISO YYYY-MM-DD string.
+
+        SAP dates come as /Date(epoch_ms)/ or /Date(epoch_ms+offset)/.
+        Returns None for empty/null values.
+        """
+        if not value:
+            return None
+        s = str(value).strip()
+        if not s:
+            return None
+        # Match /Date(1471392000000)/ or /Date(1471392000000+0000)/
+        m = re.search(r"/Date\(([-]?\d+)", s)
+        if m:
+            epoch_ms = int(m.group(1))
+            dt = datetime.fromtimestamp(epoch_ms / 1000, tz=timezone.utc)
+            return dt.strftime("%Y-%m-%d")
+        # Already ISO format or other string — return as-is (truncated)
+        return s[:30]
 
     @staticmethod
     def _parse_error(response: requests.Response) -> str:
