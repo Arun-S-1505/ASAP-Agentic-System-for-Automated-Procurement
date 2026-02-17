@@ -57,12 +57,14 @@ _ODATA_FIELD_MAP: dict[str, str] = {
     "PurchasingGroup":              "purchasing_group",
     "CreatedByUser":                "created_by",
     "Supplier":                     "supplier",
-    "PurchaseRequisitionReleaseCode": "release_status",
+    "FixedSupplier":                "fixed_supplier",
+    "PurReqnReleaseStatus":         "release_status",
     "ProcessingStatus":             "processing_status",
-    "PurReqIsMarkedForDeletion":    "is_deleted",
-    "PurReqnIsFixed":               "is_closed",
-    "PurchaseRequisitionDate":      "creation_date",
+    "IsDeleted":                    "is_deleted",
+    "IsClosed":                     "is_closed",
+    "CreationDate":                 "creation_date",
     "DeliveryDate":                 "delivery_date",
+    "ItemNetAmount":                "total_amount",
 }
 
 # Decision mapping → SAP release action codes
@@ -225,12 +227,10 @@ class SAPERPAdapter(ERPAdapter):
             "$select": ",".join(_ODATA_FIELD_MAP.keys()),
         }
 
-        # Filter for pending / not-yet-released items
-        odata_filter = filters.get(
-            "filter",
-            "PurchaseRequisitionReleaseCode eq ''",
-        )
-        params["$filter"] = odata_filter
+        # Optional OData filter (sandbox has no reliable release-code filter)
+        odata_filter = filters.get("filter")
+        if odata_filter:
+            params["$filter"] = odata_filter
 
         logger.info(
             "SAPERPAdapter: fetching requisitions from %s", url,
@@ -688,6 +688,7 @@ class SAPERPAdapter(ERPAdapter):
         # Parse numeric fields safely
         quantity_raw = odata_item.get("RequestedQuantity")
         price_raw = odata_item.get("PurchaseRequisitionPrice")
+        net_amount_raw = odata_item.get("ItemNetAmount")
 
         quantity = None
         if quantity_raw is not None:
@@ -709,21 +710,35 @@ class SAPERPAdapter(ERPAdapter):
                     price_raw,
                 )
 
-        # Compute total amount
+        # Use SAP's ItemNetAmount if available, else compute
         total_amount = None
-        if quantity is not None and price is not None:
+        if net_amount_raw is not None:
+            try:
+                total_amount = float(net_amount_raw)
+            except (ValueError, TypeError):
+                pass
+        if total_amount is None and quantity is not None and price is not None:
             total_amount = round(quantity * price, 2)
 
-        # Parse boolean fields
-        is_deleted = odata_item.get("PurReqIsMarkedForDeletion")
-        if isinstance(is_deleted, str):
-            is_deleted = is_deleted.lower() in ("true", "x", "1")
-        is_closed = odata_item.get("PurReqnIsFixed")
-        if isinstance(is_closed, str):
-            is_closed = is_closed.lower() in ("true", "x", "1")
+        # Parse boolean fields (SAP returns bool or string)
+        is_deleted_raw = odata_item.get("IsDeleted")
+        if isinstance(is_deleted_raw, bool):
+            is_deleted = is_deleted_raw
+        elif isinstance(is_deleted_raw, str):
+            is_deleted = is_deleted_raw.lower() in ("true", "x", "1")
+        else:
+            is_deleted = False
+
+        is_closed_raw = odata_item.get("IsClosed")
+        if isinstance(is_closed_raw, bool):
+            is_closed = is_closed_raw
+        elif isinstance(is_closed_raw, str):
+            is_closed = is_closed_raw.lower() in ("true", "x", "1")
+        else:
+            is_closed = False
 
         # Parse dates (SAP format: /Date(epoch)/ or YYYY-MM-DD)
-        creation_date = odata_item.get("PurchaseRequisitionDate", "")
+        creation_date = odata_item.get("CreationDate", "")
         delivery_date = odata_item.get("DeliveryDate", "")
 
         return RequisitionDTO(
@@ -744,11 +759,11 @@ class SAPERPAdapter(ERPAdapter):
             company_code=odata_item.get("CompanyCode"),
             purchasing_group=odata_item.get("PurchasingGroup"),
             created_by=odata_item.get("CreatedByUser"),
-            supplier=odata_item.get("Supplier"),
-            release_status=odata_item.get("PurchaseRequisitionReleaseCode"),
+            supplier=odata_item.get("Supplier") or odata_item.get("FixedSupplier"),
+            release_status=odata_item.get("PurReqnReleaseStatus"),
             processing_status=odata_item.get("ProcessingStatus"),
-            is_deleted=is_deleted if isinstance(is_deleted, bool) else False,
-            is_closed=is_closed if isinstance(is_closed, bool) else False,
+            is_deleted=is_deleted,
+            is_closed=is_closed,
             creation_date=str(creation_date) if creation_date else None,
             delivery_date=str(delivery_date) if delivery_date else None,
         )

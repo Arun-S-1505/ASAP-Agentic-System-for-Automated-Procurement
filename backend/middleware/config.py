@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     sap_password: str = ""
     sap_api_key: str = ""  # SAP API Business Hub sandbox key
     sap_timeout: int = 30
-    sap_service_prefix: str = ""  # "/s4hanacloud" for API Hub Sandbox, "" for on-premise/BTP
+    sap_service_prefix: str = "/s4hanacloud"  # "/s4hanacloud" for API Hub Sandbox, "" for on-premise/BTP
 
     # --- ERP Adapter Mode ---
     erp_mode: str = "mock"  # mock | sap | hybrid
