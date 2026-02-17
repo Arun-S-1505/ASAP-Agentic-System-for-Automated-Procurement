@@ -152,7 +152,7 @@ class ApprovalOrchestrator:
                     # Manual mode: leave as detected for user action
                     state = "detected"
 
-                # Create approval decision record
+                # Create approval decision record with enriched SAP data
                 approval_decision = ApprovalDecision(
                     id=str(uuid.uuid4()),
                     erp_requisition_id=requisition.erp_requisition_id,
@@ -162,6 +162,26 @@ class ApprovalOrchestrator:
                     state=state,
                     commit_at=commit_at,
                     comment=self._generate_comment(risk_score, decision),
+                    # Enriched SAP fields
+                    product_name=requisition.description,
+                    material_code=requisition.material,
+                    material_group=requisition.material_group,
+                    quantity=requisition.quantity,
+                    unit=requisition.unit,
+                    unit_price=requisition.price,
+                    total_amount=requisition.total_amount,
+                    currency=requisition.currency,
+                    plant=requisition.plant,
+                    company_code=requisition.company_code,
+                    purchasing_group=requisition.purchasing_group,
+                    created_by=requisition.created_by,
+                    supplier=requisition.supplier,
+                    release_status=requisition.release_status,
+                    processing_status=requisition.processing_status,
+                    is_deleted=requisition.is_deleted,
+                    is_closed=requisition.is_closed,
+                    creation_date=requisition.creation_date,
+                    delivery_date=requisition.delivery_date,
                 )
 
                 db.add(approval_decision)

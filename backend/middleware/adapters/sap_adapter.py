@@ -52,6 +52,17 @@ _ODATA_FIELD_MAP: dict[str, str] = {
     "PurchaseRequisitionPrice":     "price",
     "PurReqnItemCurrency":          "currency",
     "Plant":                        "plant",
+    "MaterialGroup":                "material_group",
+    "CompanyCode":                  "company_code",
+    "PurchasingGroup":              "purchasing_group",
+    "CreatedByUser":                "created_by",
+    "Supplier":                     "supplier",
+    "PurchaseRequisitionReleaseCode": "release_status",
+    "ProcessingStatus":             "processing_status",
+    "PurReqIsMarkedForDeletion":    "is_deleted",
+    "PurReqnIsFixed":               "is_closed",
+    "PurchaseRequisitionDate":      "creation_date",
+    "DeliveryDate":                 "delivery_date",
 }
 
 # Decision mapping → SAP release action codes
@@ -210,7 +221,7 @@ class SAPERPAdapter(ERPAdapter):
         # OData query parameters
         params: dict[str, str] = {
             "$format": "json",
-            "$top": "100",
+            "$top": filters.get("top", "100"),
             "$select": ",".join(_ODATA_FIELD_MAP.keys()),
         }
 
@@ -698,6 +709,23 @@ class SAPERPAdapter(ERPAdapter):
                     price_raw,
                 )
 
+        # Compute total amount
+        total_amount = None
+        if quantity is not None and price is not None:
+            total_amount = round(quantity * price, 2)
+
+        # Parse boolean fields
+        is_deleted = odata_item.get("PurReqIsMarkedForDeletion")
+        if isinstance(is_deleted, str):
+            is_deleted = is_deleted.lower() in ("true", "x", "1")
+        is_closed = odata_item.get("PurReqnIsFixed")
+        if isinstance(is_closed, str):
+            is_closed = is_closed.lower() in ("true", "x", "1")
+
+        # Parse dates (SAP format: /Date(epoch)/ or YYYY-MM-DD)
+        creation_date = odata_item.get("PurchaseRequisitionDate", "")
+        delivery_date = odata_item.get("DeliveryDate", "")
+
         return RequisitionDTO(
             erp_requisition_id=str(
                 odata_item.get("PurchaseRequisition", "")
@@ -708,9 +736,21 @@ class SAPERPAdapter(ERPAdapter):
             quantity=quantity,
             unit=odata_item.get("BaseUnit"),
             price=price,
-            currency=odata_item.get("Currency"),
+            currency=odata_item.get("PurReqnItemCurrency"),
             plant=odata_item.get("Plant"),
             fetched_at=datetime.utcnow(),
+            material_group=odata_item.get("MaterialGroup"),
+            total_amount=total_amount,
+            company_code=odata_item.get("CompanyCode"),
+            purchasing_group=odata_item.get("PurchasingGroup"),
+            created_by=odata_item.get("CreatedByUser"),
+            supplier=odata_item.get("Supplier"),
+            release_status=odata_item.get("PurchaseRequisitionReleaseCode"),
+            processing_status=odata_item.get("ProcessingStatus"),
+            is_deleted=is_deleted if isinstance(is_deleted, bool) else False,
+            is_closed=is_closed if isinstance(is_closed, bool) else False,
+            creation_date=str(creation_date) if creation_date else None,
+            delivery_date=str(delivery_date) if delivery_date else None,
         )
 
     @staticmethod

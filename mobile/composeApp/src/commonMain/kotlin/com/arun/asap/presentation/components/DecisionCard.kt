@@ -48,52 +48,98 @@ fun DecisionCard(
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Row 1: ID + Decision badge
+            // Row 1: PR ID + Release Status badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = decision.erpRequisitionId,
+                    text = "PR ${decision.erpRequisitionId}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                DecisionBadge(decision = decision.decision)
+                ReleaseStatusBadge(status = decision.releaseStatus)
             }
 
-            // Row 2: Risk + State
+            // Row 2: Product Name
+            decision.productName?.let { name ->
+                if (name.isNotBlank()) {
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2
+                    )
+                }
+            }
+
+            // Row 3: Quantity + Total Amount
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                decision.riskScore?.let { s ->
-                    RiskDot(score = s)
+                // Quantity
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "Qty:",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${decision.quantity?.let { formatNumber(it) } ?: "-"} ${decision.unit ?: ""}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
-                StatusChip(state = decision.state)
+
+                // Total Amount
+                Text(
+                    text = "${decision.currency ?: "USD"} ${decision.totalAmount?.let { formatNumber(it) } ?: "-"}",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = AsapSuccess
+                )
             }
 
-            // Comment preview
-            decision.comment?.let { comment ->
-                if (comment.isNotBlank()) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.fillMaxWidth()
+            // Row 4: Created By + Decision badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.size(22.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = comment,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(10.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2
+                            text = (decision.createdBy?.firstOrNull() ?: 'U').uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
+                    Text(
+                        text = decision.createdBy ?: "Unknown",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
                 }
+                DecisionBadge(decision = decision.decision)
             }
 
             // Undo button if pending
@@ -120,6 +166,30 @@ fun DecisionCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ReleaseStatusBadge(status: String?) {
+    val displayText = when (status) {
+        "01" -> "Released"
+        "02" -> "Pending"
+        "" , null -> "Not Released"
+        else -> "Status $status"
+    }
+    val bg = when (status) {
+        "01" -> AsapSuccess
+        "02" -> AsapWarning
+        else -> Color(0xFF9E9E9E)
+    }
+    Surface(shape = RoundedCornerShape(20.dp), color = bg.copy(alpha = 0.15f)) {
+        Text(
+            text = displayText,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
+            color = bg
+        )
     }
 }
 
@@ -172,3 +242,8 @@ private fun formatDecisionText(decision: String): String =
     decision.replace("_", " ").split(" ").joinToString(" ") {
         it.replaceFirstChar { c -> c.uppercase() }
     }
+
+private fun formatNumber(value: Double): String {
+    val long = value.toLong()
+    return if (value == long.toDouble()) long.toString() else "%.2f".format(value)
+}

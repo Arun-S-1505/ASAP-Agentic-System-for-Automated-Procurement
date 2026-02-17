@@ -148,6 +148,52 @@ private fun DetailContent(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // ── Item Details ──
+            SectionCard(icon = Icons.Filled.Info, title = "Item Details") {
+                DetailRow("Purchase Requisition", decision.erpRequisitionId)
+                decision.productName?.let { DetailRow("Product Name", it) }
+                decision.materialCode?.let { DetailRow("Material Code", it) }
+                decision.materialGroup?.let { DetailRow("Material Group", it) }
+            }
+
+            // ── Pricing ──
+            SectionCard(icon = Icons.Filled.Info, title = "Pricing") {
+                decision.quantity?.let { DetailRow("Quantity", formatNum(it) + (decision.unit?.let { u -> " $u" } ?: "")) }
+                decision.unitPrice?.let { DetailRow("Unit Price", "${decision.currency ?: "USD"} ${formatNum(it)}") }
+                decision.totalAmount?.let { DetailRow("Total Amount", "${decision.currency ?: "USD"} ${formatNum(it)}") }
+                decision.currency?.let { DetailRow("Currency", it) }
+            }
+
+            // ── Organisation ──
+            SectionCard(icon = Icons.Filled.Info, title = "Organisation") {
+                decision.plant?.let { DetailRow("Plant", it) }
+                decision.companyCode?.let { DetailRow("Company Code", it) }
+                decision.purchasingGroup?.let { DetailRow("Purchasing Group", it) }
+            }
+
+            // ── People ──
+            SectionCard(icon = Icons.Filled.Info, title = "People") {
+                decision.createdBy?.let { DetailRow("Created By", it) }
+                decision.supplier?.let { DetailRow("Supplier", it) }
+            }
+
+            // ── Status Flags ──
+            SectionCard(icon = Icons.Filled.Shield, title = "Status") {
+                decision.releaseStatus?.let { DetailRow("Release Status", releaseStatusText(it)) }
+                decision.processingStatus?.let { DetailRow("Processing Status", it) }
+                decision.isDeleted?.let { DetailRow("Marked for Deletion", if (it) "Yes" else "No", if (it) AsapError else AsapSuccess) }
+                decision.isClosed?.let { DetailRow("Closed", if (it) "Yes" else "No") }
+            }
+
+            // ── Dates ──
+            SectionCard(icon = Icons.Filled.AccessTime, title = "Dates") {
+                decision.creationDate?.let { DetailRow("Creation Date", it) }
+                decision.deliveryDate?.let { DetailRow("Delivery Date", it) }
+                decision.createdAt?.let { DetailRow("System Created", formatTimestamp(it)) }
+                decision.commitAt?.let { DetailRow("Scheduled Commit", formatTimestamp(it)) }
+                decision.committedAt?.let { DetailRow("Committed At", formatTimestamp(it)) }
+            }
+
             // ── Risk Assessment ──
             decision.riskScore?.let { score ->
                 SectionCard(
@@ -167,7 +213,6 @@ private fun DetailContent(
                         RiskGauge(score = score, gaugeSize = 100f)
                     }
 
-                    // ── Risk Explanation ──
                     decision.riskExplanation?.let { explanation ->
                         if (explanation.isNotBlank()) {
                             Spacer(modifier = Modifier.height(4.dp))
@@ -212,13 +257,6 @@ private fun DetailContent(
                         }
                     }
                 }
-            }
-
-            // ── Timestamps ──
-            SectionCard(icon = Icons.Filled.AccessTime, title = "Timestamps") {
-                decision.createdAt?.let { DetailRow("Created", formatTimestamp(it)) }
-                decision.commitAt?.let { DetailRow("Scheduled Commit", formatTimestamp(it)) }
-                decision.committedAt?.let { DetailRow("Committed At", formatTimestamp(it)) }
             }
 
             // ── Approve / Reject Actions ──
@@ -389,3 +427,15 @@ private fun riskLabel(s: Double): String = when {
 
 private fun formatTimestamp(ts: String): String =
     ts.replace("T", "  ").substringBefore(".")
+
+private fun releaseStatusText(code: String): String = when (code) {
+    "01" -> "Released"
+    "02" -> "Pending"
+    "" -> "Not Released"
+    else -> "Status $code"
+}
+
+private fun formatNum(v: Double): String {
+    val l = v.toLong()
+    return if (v == l.toDouble()) l.toString() else "%.2f".format(v)
+}

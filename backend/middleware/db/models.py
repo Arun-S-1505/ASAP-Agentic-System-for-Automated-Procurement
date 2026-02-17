@@ -126,6 +126,27 @@ class ApprovalDecision(Base):
     # Optional explanation
     comment: Mapped[str | None] = mapped_column(Text)
 
+    # --- Enriched SAP requisition fields ---
+    product_name: Mapped[str | None] = mapped_column(String(255))
+    material_code: Mapped[str | None] = mapped_column(String(100))
+    material_group: Mapped[str | None] = mapped_column(String(50))
+    quantity: Mapped[float | None] = mapped_column(Float)
+    unit: Mapped[str | None] = mapped_column(String(10))
+    unit_price: Mapped[float | None] = mapped_column(Float)
+    total_amount: Mapped[float | None] = mapped_column(Float)
+    currency: Mapped[str | None] = mapped_column(String(5))
+    plant: Mapped[str | None] = mapped_column(String(20))
+    company_code: Mapped[str | None] = mapped_column(String(20))
+    purchasing_group: Mapped[str | None] = mapped_column(String(20))
+    created_by: Mapped[str | None] = mapped_column(String(100))
+    supplier: Mapped[str | None] = mapped_column(String(50))
+    release_status: Mapped[str | None] = mapped_column(String(10))
+    processing_status: Mapped[str | None] = mapped_column(String(10))
+    is_deleted: Mapped[bool | None] = mapped_column(default=False)
+    is_closed: Mapped[bool | None] = mapped_column(default=False)
+    creation_date: Mapped[str | None] = mapped_column(String(20))
+    delivery_date: Mapped[str | None] = mapped_column(String(20))
+
     # Commit tracking
     committed_at: Mapped[datetime | None] = mapped_column(DateTime)
     error_message: Mapped[str | None] = mapped_column(Text)

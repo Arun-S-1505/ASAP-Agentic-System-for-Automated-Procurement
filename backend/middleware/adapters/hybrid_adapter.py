@@ -37,14 +37,16 @@ class HybridERPAdapter(SAPERPAdapter):
         self, **filters,
     ) -> list[RequisitionDTO]:
         """
-        Fetch requisitions from SAP Sandbox without the release-code filter.
+        Fetch top 10 requisitions from SAP Sandbox.
 
         The sandbox has pre-loaded sample data that doesn't match the
         on-premise PurchaseRequisitionReleaseCode filter. We override
-        the default filter with a no-op to fetch all available items.
+        the default filter with a no-op to fetch all available items,
+        limited to 10 for the dashboard.
         """
         # Override filter to fetch all items from sandbox
         filters.setdefault("filter", "PurchaseRequisition ne ''")
+        filters.setdefault("top", "10")
         return super().fetch_pending_requisitions(**filters)
 
     # ------------------------------------------------------------------

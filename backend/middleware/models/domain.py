@@ -29,6 +29,20 @@ class RequisitionDTO:
     plant: Optional[str] = None
     fetched_at: Optional[datetime] = None
 
+    # --- Extended SAP fields ---
+    material_group: Optional[str] = None
+    total_amount: Optional[float] = None
+    company_code: Optional[str] = None
+    purchasing_group: Optional[str] = None
+    created_by: Optional[str] = None
+    supplier: Optional[str] = None
+    release_status: Optional[str] = None
+    processing_status: Optional[str] = None
+    is_deleted: Optional[bool] = None
+    is_closed: Optional[bool] = None
+    creation_date: Optional[str] = None
+    delivery_date: Optional[str] = None
+
 
 @dataclass
 class DecisionDTO:

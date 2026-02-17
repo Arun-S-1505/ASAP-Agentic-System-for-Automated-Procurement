@@ -83,6 +83,27 @@ class ApprovalDecisionOut(BaseModel):
     comment: str | None = None
     created_at: datetime
 
+    # --- Enriched SAP requisition fields ---
+    product_name: str | None = None
+    material_code: str | None = None
+    material_group: str | None = None
+    quantity: float | None = None
+    unit: str | None = None
+    unit_price: float | None = None
+    total_amount: float | None = None
+    currency: str | None = None
+    plant: str | None = None
+    company_code: str | None = None
+    purchasing_group: str | None = None
+    created_by: str | None = None
+    supplier: str | None = None
+    release_status: str | None = None
+    processing_status: str | None = None
+    is_deleted: bool | None = None
+    is_closed: bool | None = None
+    creation_date: str | None = None
+    delivery_date: str | None = None
+
     model_config = {"from_attributes": True}
 
 
