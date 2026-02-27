@@ -57,28 +57,14 @@ async def lifespan(app: FastAPI):
     # Create tables if they don't exist (idempotent operation)
     try:
         logger.info("Ensuring database tables exist (creating if needed)")
+        if settings.demo_mode:
+            # In demo mode, drop and recreate so schema changes take effect
+            logger.warning("DEMO_MODE enabled — dropping and recreating all tables")
+            Base.metadata.drop_all(bind=engine)
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables ready")
     except Exception as exc:
         logger.warning("Database table creation failed: %s", exc)
-
-    # Demo mode: Clear all POs for fresh demo
-    if settings.demo_mode:
-        logger.warning("DEMO_MODE enabled — resetting all requisitions and decisions")
-        from db.session import SessionLocal
-        from db.models import Requisition, ApprovalDecision, ERPSimulatedRequisition
-        db = SessionLocal()
-        try:
-            db.query(ApprovalDecision).delete()
-            db.query(Requisition).delete()
-            db.query(ERPSimulatedRequisition).delete()
-            db.commit()
-            logger.info("Demo reset complete — all POs cleared")
-        except Exception as exc:
-            logger.error("Demo reset failed: %s", exc)
-            db.rollback()
-        finally:
-            db.close()
 
     # Always initialize ERP adapter (needed for /detect endpoint)
     init_adapter()
