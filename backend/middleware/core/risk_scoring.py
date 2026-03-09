@@ -16,14 +16,13 @@ logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Scoring thresholds — calibrated for SAP Sandbox API data.
-# SAP Sandbox PurchaseRequisitionPrice: typically 5–5,000 per unit
-# SAP Sandbox RequestedQuantity: typically 1–1,000
+# SAP Sandbox typical: price 10–25 USD, quantity 1–10, totals 30–200 USD.
 # ---------------------------------------------------------------------------
-HIGH_VALUE_THRESHOLD: float = 10_000.0      # Total > ₹10,000 → high risk
-ELEVATED_VALUE_THRESHOLD: float = 2_000.0   # Total > ₹2,000  → elevated risk
-MODERATE_VALUE_THRESHOLD: float = 500.0     # Total > ₹500    → moderate risk
-UNIT_PRICE_THRESHOLD: float = 1_000.0       # Unit price > ₹1,000 → anomalous
-QUANTITY_THRESHOLD: float = 100.0           # Qty > 100 → bulk order flag
+HIGH_VALUE_THRESHOLD: float = 150.0         # Total > 150 → high risk
+ELEVATED_VALUE_THRESHOLD: float = 75.0      # Total > 75  → elevated risk
+MODERATE_VALUE_THRESHOLD: float = 30.0      # Total > 30  → moderate risk
+UNIT_PRICE_THRESHOLD: float = 15.0          # Unit price > 15 → anomalous
+QUANTITY_THRESHOLD: float = 5.0             # Qty > 5 → bulk order flag
 
 HIGH_RISK_MATERIALS: set[str] = {
     "HAZMAT", "CHEM", "CHEMICAL", "EXPLOSIVE",

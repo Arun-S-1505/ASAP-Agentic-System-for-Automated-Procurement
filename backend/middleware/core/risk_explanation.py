@@ -25,16 +25,16 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 # Value thresholds (must stay in sync with RiskScoringEngine constants)
-# Calibrated for SAP Sandbox API data (PurchaseRequisitionPrice / RequestedQuantity)
-HIGH_VALUE_THRESHOLD: float = 10_000.0      # Total > ₹10,000 → high risk
-ELEVATED_VALUE_THRESHOLD: float = 2_000.0   # Total > ₹2,000  → elevated risk
-MODERATE_VALUE_THRESHOLD: float = 500.0     # Total > ₹500    → moderate risk
+# Calibrated for SAP Sandbox API data (typical: price 10–25, qty 1–10, totals 30–200)
+HIGH_VALUE_THRESHOLD: float = 150.0         # Total > 150 → high risk
+ELEVATED_VALUE_THRESHOLD: float = 75.0      # Total > 75  → elevated risk
+MODERATE_VALUE_THRESHOLD: float = 30.0      # Total > 30  → moderate risk
 
 # Unit-price threshold
-UNIT_PRICE_THRESHOLD: float = 1_000.0       # Unit price > ₹1,000 → anomalous
+UNIT_PRICE_THRESHOLD: float = 15.0          # Unit price > 15 → anomalous
 
 # Quantity threshold
-QUANTITY_THRESHOLD: float = 100.0           # Qty > 100 → bulk order flag
+QUANTITY_THRESHOLD: float = 5.0             # Qty > 5 → bulk order flag
 
 # High-risk material keywords (case-insensitive match)
 HIGH_RISK_MATERIALS: set[str] = {

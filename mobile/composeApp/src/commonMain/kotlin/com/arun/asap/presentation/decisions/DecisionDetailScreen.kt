@@ -151,44 +151,44 @@ private fun DetailContent(
             // ── Item Details ──
             SectionCard(icon = Icons.Filled.Info, title = "Item Details") {
                 DetailRow("Purchase Requisition", decision.erpRequisitionId)
-                decision.productName?.let { DetailRow("Product Name", it) }
-                decision.materialCode?.let { DetailRow("Material Code", it) }
-                decision.materialGroup?.let { DetailRow("Material Group", it) }
+                DetailRow("Product Name", decision.productName?.takeIf { it.isNotBlank() } ?: "N/A")
+                DetailRow("Material Code", decision.materialCode?.takeIf { it.isNotBlank() } ?: "N/A")
+                DetailRow("Material Group", decision.materialGroup?.takeIf { it.isNotBlank() } ?: "N/A")
             }
 
             // ── Pricing ──
             SectionCard(icon = Icons.Filled.Info, title = "Pricing") {
-                decision.quantity?.let { DetailRow("Quantity", formatNum(it) + (decision.unit?.let { u -> " $u" } ?: "")) }
-                decision.unitPrice?.let { DetailRow("Unit Price", "${decision.currency ?: "USD"} ${formatNum(it)}") }
-                decision.totalAmount?.let { DetailRow("Total Amount", "${decision.currency ?: "USD"} ${formatNum(it)}") }
-                decision.currency?.let { DetailRow("Currency", it) }
+                DetailRow("Quantity", decision.quantity?.let { formatNum(it) + (decision.unit?.let { u -> " $u" } ?: "") } ?: "N/A")
+                DetailRow("Unit Price", decision.unitPrice?.let { "${decision.currency ?: "USD"} ${formatNum(it)}" } ?: "N/A")
+                DetailRow("Total Amount", decision.totalAmount?.let { "${decision.currency ?: "USD"} ${formatNum(it)}" } ?: "N/A")
+                DetailRow("Currency", decision.currency ?: "N/A")
             }
 
             // ── Organisation ──
             SectionCard(icon = Icons.Filled.Info, title = "Organisation") {
-                decision.plant?.let { DetailRow("Plant", it) }
-                decision.companyCode?.let { DetailRow("Company Code", it) }
-                decision.purchasingGroup?.let { DetailRow("Purchasing Group", it) }
+                DetailRow("Plant", decision.plant?.takeIf { it.isNotBlank() } ?: "N/A")
+                DetailRow("Company Code", decision.companyCode?.takeIf { it.isNotBlank() } ?: "N/A")
+                DetailRow("Purchasing Group", decision.purchasingGroup?.takeIf { it.isNotBlank() } ?: "N/A")
             }
 
             // ── People ──
             SectionCard(icon = Icons.Filled.Info, title = "People") {
-                decision.createdBy?.let { DetailRow("Created By", it) }
-                decision.supplier?.let { DetailRow("Supplier", it) }
+                DetailRow("Created By", decision.createdBy?.takeIf { it.isNotBlank() } ?: "N/A")
+                DetailRow("Supplier", decision.supplier?.takeIf { it.isNotBlank() } ?: "N/A")
             }
 
             // ── Status Flags ──
             SectionCard(icon = Icons.Filled.Shield, title = "Status") {
-                decision.releaseStatus?.let { DetailRow("Release Status", releaseStatusText(it)) }
-                decision.processingStatus?.let { DetailRow("Processing Status", it) }
-                decision.isDeleted?.let { DetailRow("Marked for Deletion", if (it) "Yes" else "No", if (it) AsapError else AsapSuccess) }
-                decision.isClosed?.let { DetailRow("Closed", if (it) "Yes" else "No") }
+                DetailRow("Release Status", releaseStatusText(decision.releaseStatus ?: ""))
+                DetailRow("Processing Status", processingStatusText(decision.processingStatus ?: ""))
+                DetailRow("Marked for Deletion", if (decision.isDeleted == true) "Yes" else "No", if (decision.isDeleted == true) AsapError else AsapSuccess)
+                DetailRow("Closed", if (decision.isClosed == true) "Yes" else "No")
             }
 
             // ── Dates ──
             SectionCard(icon = Icons.Filled.AccessTime, title = "Dates") {
-                decision.creationDate?.let { DetailRow("Creation Date", it) }
-                decision.deliveryDate?.let { DetailRow("Delivery Date", it) }
+                DetailRow("Creation Date", decision.creationDate ?: "N/A")
+                DetailRow("Delivery Date", decision.deliveryDate ?: "N/A")
                 decision.createdAt?.let { DetailRow("System Created", formatTimestamp(it)) }
                 decision.commitAt?.let { DetailRow("Scheduled Commit", formatTimestamp(it)) }
                 decision.committedAt?.let { DetailRow("Committed At", formatTimestamp(it)) }
@@ -236,7 +236,7 @@ private fun DetailContent(
             // ── Decision Info ──
             SectionCard(icon = Icons.Filled.Info, title = "Decision Information") {
                 DetailRow("Decision Type", formatDecisionText(decision.decision), decisionColor(decision.decision))
-                DetailRow("Decision ID", decision.id)
+                DetailRow("Decision ID", shortId(decision.id))
             }
 
             // ── Comment ──
@@ -431,9 +431,21 @@ private fun formatTimestamp(ts: String): String =
 private fun releaseStatusText(code: String): String = when (code) {
     "01" -> "Released"
     "02" -> "Pending"
+    "03" -> "Partially Released"
     "" -> "Not Released"
     else -> "Status $code"
 }
+
+private fun processingStatusText(code: String): String = when (code) {
+    "N" -> "Not Started"
+    "B" -> "In Process"
+    "C" -> "Completed"
+    "" -> "Unknown"
+    else -> code
+}
+
+private fun shortId(id: String): String =
+    if (id.length > 8) id.take(8).uppercase() + "\u2026" else id
 
 private fun formatNum(v: Double): String {
     val l = v.toLong()
