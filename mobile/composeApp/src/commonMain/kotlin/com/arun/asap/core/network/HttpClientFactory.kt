@@ -1,6 +1,7 @@
 package com.arun.asap.core.network
 
 import io.ktor.client.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
@@ -15,6 +16,7 @@ object HttpClientFactory {
      * Creates and configures an HttpClient instance with:
      * - Content negotiation for JSON serialization/deserialization
      * - JSON configuration with ignoreUnknownKeys and prettyPrint settings
+     * - Proper timeouts to prevent infinite hangs
      *
      * @return Configured HttpClient instance
      */
@@ -31,6 +33,12 @@ object HttpClientFactory {
                         explicitNulls = false
                     }
                 )
+            }
+
+            install(HttpTimeout) {
+                requestTimeoutMillis = 30_000L
+                connectTimeoutMillis = 15_000L
+                socketTimeoutMillis = 30_000L
             }
         }
     }

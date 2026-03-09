@@ -1,0 +1,14 @@
+List of devices attached
+
+Emulator processes: 0
+Build result file: True
+> Task :composeApp:mergeDebugJavaResource UP-TO-DATE
+> Task :composeApp:dexBuilderDebug
+> Task :composeApp:mergeProjectDexDebug
+> Task :composeApp:packageDebug
+> Task :composeApp:assembleDebug
+> Task :composeApp:createDebugApkListingFileRedirect UP-TO-DATE
+
+BUILD SUCCESSFUL in 32s
+42 actionable tasks: 5 executed, 37 up-to-date
+Configuration cache entry reused.

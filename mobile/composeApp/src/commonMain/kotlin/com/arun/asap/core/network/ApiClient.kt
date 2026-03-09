@@ -179,10 +179,21 @@ class ApiClient(
         return try {
             val response = apiCall()
             ApiResult.Success(response)
-        } catch (e: Exception) {
+        } catch (_: io.ktor.client.plugins.HttpRequestTimeoutException) {
             ApiResult.Error(
-                message = e.message ?: "An unknown error occurred"
+                message = "Request timed out. The server may be starting up — please try again in a moment."
             )
+        } catch (e: Exception) {
+            val message = when {
+                e.message?.contains("timeout", ignoreCase = true) == true ->
+                    "Connection timed out. Please check your network and try again."
+                e.message?.contains("Unable to resolve host", ignoreCase = true) == true ->
+                    "No internet connection. Please check your network."
+                e.message?.contains("Connection refused", ignoreCase = true) == true ->
+                    "Server unavailable. Please try again later."
+                else -> e.message ?: "An unknown error occurred"
+            }
+            ApiResult.Error(message = message)
         }
     }
 }

@@ -33,15 +33,51 @@ class ApprovalEngine:
         Produce an approval decision.
 
         Args:
-            risk_score: Output of RiskScoringEngine.score().
+            risk_score: Output of RiskScoringEngine.score() — range 0–100.
             requisition: Normalised requisition dict.
 
         Returns:
             One of: "auto_approve", "escalate", "reject", "hold".
         """
-        # TODO: implement decision matrix
-        #   - check score thresholds
-        #   - apply policy overrides (e.g., certain materials always escalate)
-        #   - enforce spending limits per cost centre
-        logger.debug("ApprovalEngine.decide() called — returning placeholder")
-        return "hold"
+        material: str = (requisition.get("material") or "").upper()
+        plant: str = (requisition.get("plant") or "").upper()
+
+        # Policy override: restricted materials always escalate regardless of score
+        HIGH_RISK_KEYWORDS = {
+            "HAZMAT", "CHEM", "CHEMICAL", "EXPLOSIVE",
+            "RADIOACTIVE", "BIOHAZARD", "TOXIC",
+        }
+        RESTRICTED_PLANTS = {"NUCLEAR", "DEFENSE", "WEAPONS", "CLASSIFIED"}
+
+        if any(kw in material for kw in HIGH_RISK_KEYWORDS):
+            logger.debug(
+                "ApprovalEngine: high-risk material detected — escalating"
+            )
+            return "escalate"
+
+        if any(rp in plant for rp in RESTRICTED_PLANTS):
+            logger.debug(
+                "ApprovalEngine: restricted plant detected — escalating"
+            )
+            return "escalate"
+
+        # Score-based decision matrix
+        if risk_score <= self.LOW_RISK_THRESHOLD:
+            logger.debug(
+                "ApprovalEngine: score %.2f ≤ %.2f → auto_approve",
+                risk_score, self.LOW_RISK_THRESHOLD,
+            )
+            return "auto_approve"
+
+        if risk_score <= self.HIGH_RISK_THRESHOLD:
+            logger.debug(
+                "ApprovalEngine: score %.2f in (%.2f, %.2f] → escalate",
+                risk_score, self.LOW_RISK_THRESHOLD, self.HIGH_RISK_THRESHOLD,
+            )
+            return "escalate"
+
+        logger.debug(
+            "ApprovalEngine: score %.2f > %.2f → reject",
+            risk_score, self.HIGH_RISK_THRESHOLD,
+        )
+        return "reject"

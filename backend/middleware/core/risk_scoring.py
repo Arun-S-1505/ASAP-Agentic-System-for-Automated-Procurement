@@ -15,14 +15,15 @@ from models.domain import RequisitionDTO
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Scoring thresholds (tuned for SAP Sandbox demo data)
-# Production values in comments — restore for enterprise use.
+# Scoring thresholds — calibrated for SAP Sandbox API data.
+# SAP Sandbox PurchaseRequisitionPrice: typically 5–5,000 per unit
+# SAP Sandbox RequestedQuantity: typically 1–1,000
 # ---------------------------------------------------------------------------
-HIGH_VALUE_THRESHOLD: float = 100.0         # prod: 50_000.0
-ELEVATED_VALUE_THRESHOLD: float = 50.0      # prod: 10_000.0
-MODERATE_VALUE_THRESHOLD: float = 20.0      # prod: 5_000.0
-UNIT_PRICE_THRESHOLD: float = 10.0          # prod: 5_000.0
-QUANTITY_THRESHOLD: float = 5.0             # prod: 500.0
+HIGH_VALUE_THRESHOLD: float = 10_000.0      # Total > ₹10,000 → high risk
+ELEVATED_VALUE_THRESHOLD: float = 2_000.0   # Total > ₹2,000  → elevated risk
+MODERATE_VALUE_THRESHOLD: float = 500.0     # Total > ₹500    → moderate risk
+UNIT_PRICE_THRESHOLD: float = 1_000.0       # Unit price > ₹1,000 → anomalous
+QUANTITY_THRESHOLD: float = 100.0           # Qty > 100 → bulk order flag
 
 HIGH_RISK_MATERIALS: set[str] = {
     "HAZMAT", "CHEM", "CHEMICAL", "EXPLOSIVE",

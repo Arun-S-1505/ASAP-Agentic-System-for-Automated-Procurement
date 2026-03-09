@@ -414,14 +414,14 @@ private fun decisionColor(d: String): Color = when (d) {
 }
 
 private fun riskColor(s: Double): Color = when {
-    s < 0.3 -> Color(0xFF00C853)
-    s < 0.7 -> Color(0xFFFFB300)
+    s < 30.0 -> Color(0xFF00C853)
+    s < 70.0 -> Color(0xFFFFB300)
     else -> Color(0xFFE53935)
 }
 
 private fun riskLabel(s: Double): String = when {
-    s < 0.3 -> "Low Risk"
-    s < 0.7 -> "Medium Risk"
+    s < 30.0 -> "Low Risk"
+    s < 70.0 -> "Medium Risk"
     else -> "High Risk"
 }
 

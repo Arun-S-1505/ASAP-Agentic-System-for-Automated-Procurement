@@ -215,8 +215,8 @@ private fun DecisionBadge(decision: String) {
 @Composable
 private fun RiskDot(score: Double) {
     val color = when {
-        score < 0.3 -> Color(0xFF00C853)
-        score < 0.7 -> Color(0xFFFFB300)
+        score < 30.0 -> Color(0xFF00C853)
+        score < 70.0 -> Color(0xFFFFB300)
         else -> Color(0xFFE53935)
     }
     Row(
@@ -230,7 +230,7 @@ private fun RiskDot(score: Double) {
                 .background(color)
         )
         Text(
-            text = "Risk ${(score * 100).toInt() / 100.0}",
+            text = "Risk ${score.toInt()}%",
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Medium,
             color = color

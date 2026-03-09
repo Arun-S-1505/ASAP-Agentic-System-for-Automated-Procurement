@@ -42,13 +42,13 @@ fun RiskGauge(
     LaunchedEffect(Unit) { animationPlayed = true }
 
     val gaugeColor = when {
-        score < 0.3 -> Color(0xFF00C853)
-        score < 0.7 -> Color(0xFFFFB300)
+        score < 30.0 -> Color(0xFF00C853)
+        score < 70.0 -> Color(0xFFFFB300)
         else -> Color(0xFFE53935)
     }
     val riskLabel = when {
-        score < 0.3 -> "Low Risk"
-        score < 0.7 -> "Medium Risk"
+        score < 30.0 -> "Low Risk"
+        score < 70.0 -> "Medium Risk"
         else -> "High Risk"
     }
 
@@ -77,7 +77,7 @@ fun RiskGauge(
                 drawArc(
                     color = gaugeColor,
                     startAngle = 135f,
-                    sweepAngle = 270f * currentPercentage,
+                    sweepAngle = 270f * (currentPercentage / 100f),
                     useCenter = false,
                     topLeft = topLeft,
                     size = arcSize,
@@ -86,7 +86,7 @@ fun RiskGauge(
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "${(currentPercentage * 100).toInt()}%",
+                    text = "${currentPercentage.toInt()}%",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = gaugeColor
